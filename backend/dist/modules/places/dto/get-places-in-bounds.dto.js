@@ -26,18 +26,22 @@ class GetPlacesInBoundsDto {
 exports.GetPlacesInBoundsDto = GetPlacesInBoundsDto;
 __decorate([
     (0, class_transformer_1.Type)(() => Number),
+    (0, class_validator_1.IsNumber)(),
     __metadata("design:type", Number)
 ], GetPlacesInBoundsDto.prototype, "minLat", void 0);
 __decorate([
     (0, class_transformer_1.Type)(() => Number),
+    (0, class_validator_1.IsNumber)(),
     __metadata("design:type", Number)
 ], GetPlacesInBoundsDto.prototype, "minLng", void 0);
 __decorate([
     (0, class_transformer_1.Type)(() => Number),
+    (0, class_validator_1.IsNumber)(),
     __metadata("design:type", Number)
 ], GetPlacesInBoundsDto.prototype, "maxLat", void 0);
 __decorate([
     (0, class_transformer_1.Type)(() => Number),
+    (0, class_validator_1.IsNumber)(),
     __metadata("design:type", Number)
 ], GetPlacesInBoundsDto.prototype, "maxLng", void 0);
 __decorate([

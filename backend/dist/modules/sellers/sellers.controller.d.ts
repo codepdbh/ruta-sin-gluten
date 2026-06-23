@@ -22,8 +22,8 @@ export declare class SellersController {
         } | null;
         mainLocation: {
             id: string;
-            sellerProfileId: string;
             createdAt: Date;
+            sellerProfileId: string;
             addressText: string;
             reference: string | null;
             lat: number | null;
@@ -31,22 +31,22 @@ export declare class SellersController {
         } | null;
         deliveryPoints: {
             id: string;
-            sellerProfileId: string;
             name: string;
             createdAt: Date;
+            sellerProfileId: string;
             addressText: string;
             reference: string | null;
             lat: number | null;
             lng: number | null;
-            isActive: boolean;
             schedule: string | null;
+            isActive: boolean;
         }[];
         shippingAreas: {
             id: string;
-            sellerProfileId: string;
             createdAt: Date;
             department: string;
             city: string | null;
+            sellerProfileId: string;
             deliveryType: string;
             cost: number | null;
             etaText: string | null;
@@ -60,11 +60,11 @@ export declare class SellersController {
             }[];
         } & {
             id: string;
-            sellerProfileId: string;
             name: string;
             createdAt: Date;
             description: string | null;
             updatedAt: Date;
+            sellerProfileId: string;
             isActive: boolean;
             category: string;
             price: number;
@@ -75,12 +75,12 @@ export declare class SellersController {
         verificationSubmissions: {
             status: import("@prisma/client").$Enums.VerificationStatus;
             id: string;
+            submittedAt: Date;
             sellerProfileId: string;
             videoUrl: string;
             adminNotes: string | null;
             reviewedBy: string | null;
             reviewedAt: Date | null;
-            submittedAt: Date;
         }[];
     } & {
         status: import("@prisma/client").$Enums.SellerProfileStatus;
@@ -89,8 +89,10 @@ export declare class SellersController {
         userId: string;
         businessName: string;
         ownerName: string;
+        logoUrl: string | null;
         businessType: import("@prisma/client").$Enums.BusinessType;
         description: string | null;
+        country: string;
         department: string;
         city: string;
         whatsapp: string;
@@ -114,8 +116,8 @@ export declare class SellersController {
         } | null;
         mainLocation: {
             id: string;
-            sellerProfileId: string;
             createdAt: Date;
+            sellerProfileId: string;
             addressText: string;
             reference: string | null;
             lat: number | null;
@@ -123,22 +125,22 @@ export declare class SellersController {
         } | null;
         deliveryPoints: {
             id: string;
-            sellerProfileId: string;
             name: string;
             createdAt: Date;
+            sellerProfileId: string;
             addressText: string;
             reference: string | null;
             lat: number | null;
             lng: number | null;
-            isActive: boolean;
             schedule: string | null;
+            isActive: boolean;
         }[];
         shippingAreas: {
             id: string;
-            sellerProfileId: string;
             createdAt: Date;
             department: string;
             city: string | null;
+            sellerProfileId: string;
             deliveryType: string;
             cost: number | null;
             etaText: string | null;
@@ -152,11 +154,11 @@ export declare class SellersController {
             }[];
         } & {
             id: string;
-            sellerProfileId: string;
             name: string;
             createdAt: Date;
             description: string | null;
             updatedAt: Date;
+            sellerProfileId: string;
             isActive: boolean;
             category: string;
             price: number;
@@ -167,12 +169,12 @@ export declare class SellersController {
         verificationSubmissions: {
             status: import("@prisma/client").$Enums.VerificationStatus;
             id: string;
+            submittedAt: Date;
             sellerProfileId: string;
             videoUrl: string;
             adminNotes: string | null;
             reviewedBy: string | null;
             reviewedAt: Date | null;
-            submittedAt: Date;
         }[];
     } & {
         status: import("@prisma/client").$Enums.SellerProfileStatus;
@@ -181,8 +183,10 @@ export declare class SellersController {
         userId: string;
         businessName: string;
         ownerName: string;
+        logoUrl: string | null;
         businessType: import("@prisma/client").$Enums.BusinessType;
         description: string | null;
+        country: string;
         department: string;
         city: string;
         whatsapp: string;
@@ -206,8 +210,8 @@ export declare class SellersController {
         } | null;
         mainLocation: {
             id: string;
-            sellerProfileId: string;
             createdAt: Date;
+            sellerProfileId: string;
             addressText: string;
             reference: string | null;
             lat: number | null;
@@ -215,22 +219,22 @@ export declare class SellersController {
         } | null;
         deliveryPoints: {
             id: string;
-            sellerProfileId: string;
             name: string;
             createdAt: Date;
+            sellerProfileId: string;
             addressText: string;
             reference: string | null;
             lat: number | null;
             lng: number | null;
-            isActive: boolean;
             schedule: string | null;
+            isActive: boolean;
         }[];
         shippingAreas: {
             id: string;
-            sellerProfileId: string;
             createdAt: Date;
             department: string;
             city: string | null;
+            sellerProfileId: string;
             deliveryType: string;
             cost: number | null;
             etaText: string | null;
@@ -244,11 +248,11 @@ export declare class SellersController {
             }[];
         } & {
             id: string;
-            sellerProfileId: string;
             name: string;
             createdAt: Date;
             description: string | null;
             updatedAt: Date;
+            sellerProfileId: string;
             isActive: boolean;
             category: string;
             price: number;
@@ -259,12 +263,12 @@ export declare class SellersController {
         verificationSubmissions: {
             status: import("@prisma/client").$Enums.VerificationStatus;
             id: string;
+            submittedAt: Date;
             sellerProfileId: string;
             videoUrl: string;
             adminNotes: string | null;
             reviewedBy: string | null;
             reviewedAt: Date | null;
-            submittedAt: Date;
         }[];
     } & {
         status: import("@prisma/client").$Enums.SellerProfileStatus;
@@ -273,8 +277,10 @@ export declare class SellersController {
         userId: string;
         businessName: string;
         ownerName: string;
+        logoUrl: string | null;
         businessType: import("@prisma/client").$Enums.BusinessType;
         description: string | null;
+        country: string;
         department: string;
         city: string;
         whatsapp: string;
@@ -287,8 +293,8 @@ export declare class SellersController {
         sub: string;
     }, dto: CreateMainLocationDto): Promise<{
         id: string;
-        sellerProfileId: string;
         createdAt: Date;
+        sellerProfileId: string;
         addressText: string;
         reference: string | null;
         lat: number | null;
@@ -298,24 +304,29 @@ export declare class SellersController {
         sub: string;
     }, dto: CreateDeliveryPointDto): Promise<{
         id: string;
-        sellerProfileId: string;
         name: string;
         createdAt: Date;
+        sellerProfileId: string;
         addressText: string;
         reference: string | null;
         lat: number | null;
         lng: number | null;
-        isActive: boolean;
         schedule: string | null;
+        isActive: boolean;
+    }>;
+    deleteDeliveryPoint(user: {
+        sub: string;
+    }, id: string): Promise<{
+        success: boolean;
     }>;
     createShippingArea(user: {
         sub: string;
     }, dto: CreateShippingAreaDto): Promise<{
         id: string;
-        sellerProfileId: string;
         createdAt: Date;
         department: string;
         city: string | null;
+        sellerProfileId: string;
         deliveryType: string;
         cost: number | null;
         etaText: string | null;

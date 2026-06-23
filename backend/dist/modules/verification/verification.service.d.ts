@@ -6,11 +6,11 @@ export declare class VerificationService {
     submit(userId: string, dto: SubmitVerificationDto): Promise<{
         status: import("@prisma/client").$Enums.VerificationStatus;
         id: string;
+        submittedAt: Date;
         sellerProfileId: string;
         videoUrl: string;
         adminNotes: string | null;
         reviewedBy: string | null;
         reviewedAt: Date | null;
-        submittedAt: Date;
     }>;
 }

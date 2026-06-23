@@ -29,7 +29,16 @@ let ProductsController = class ProductsController {
         this.productsService = productsService;
     }
     listProducts(sellerId, q, category, page, pageSize) {
-        return this.productsService.listProducts({ sellerId, q, category, page, pageSize });
+        return this.productsService.listProducts({
+            sellerId,
+            q,
+            category,
+            page,
+            pageSize,
+        });
+    }
+    listOwnProducts(user, page, pageSize) {
+        return this.productsService.listOwnProducts(user.sub, { page, pageSize });
     }
     getProduct(id) {
         return this.productsService.getProduct(id);
@@ -56,6 +65,18 @@ __decorate([
     __metadata("design:paramtypes", [String, String, String, Number, Number]),
     __metadata("design:returntype", void 0)
 ], ProductsController.prototype, "listProducts", null);
+__decorate([
+    (0, swagger_1.ApiBearerAuth)(),
+    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard, roles_guard_1.RolesGuard),
+    (0, roles_decorator_1.Roles)(client_1.Role.SELLER),
+    (0, common_1.Get)('mine'),
+    __param(0, (0, current_user_decorator_1.CurrentUser)()),
+    __param(1, (0, common_1.Query)('page')),
+    __param(2, (0, common_1.Query)('pageSize')),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object, Number, Number]),
+    __metadata("design:returntype", void 0)
+], ProductsController.prototype, "listOwnProducts", null);
 __decorate([
     (0, common_1.Get)(':id'),
     __param(0, (0, common_1.Param)('id')),

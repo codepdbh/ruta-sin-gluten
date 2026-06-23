@@ -25,14 +25,17 @@ class GetPlacesNearbyDto {
 exports.GetPlacesNearbyDto = GetPlacesNearbyDto;
 __decorate([
     (0, class_transformer_1.Type)(() => Number),
+    (0, class_validator_1.IsNumber)(),
     __metadata("design:type", Number)
 ], GetPlacesNearbyDto.prototype, "lat", void 0);
 __decorate([
     (0, class_transformer_1.Type)(() => Number),
+    (0, class_validator_1.IsNumber)(),
     __metadata("design:type", Number)
 ], GetPlacesNearbyDto.prototype, "lng", void 0);
 __decorate([
     (0, class_transformer_1.Type)(() => Number),
+    (0, class_validator_1.IsNumber)(),
     (0, class_validator_1.IsOptional)(),
     __metadata("design:type", Number)
 ], GetPlacesNearbyDto.prototype, "radius", void 0);

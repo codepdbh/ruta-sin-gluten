@@ -4,6 +4,7 @@ export declare class CreateSellerProfileDto {
     ownerName: string;
     businessType: BusinessType;
     description?: string;
+    country?: string;
     department: string;
     city: string;
     whatsapp: string;

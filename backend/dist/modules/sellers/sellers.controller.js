@@ -46,6 +46,9 @@ let SellersController = class SellersController {
     createDeliveryPoint(user, dto) {
         return this.sellersService.createDeliveryPoint(user.sub, dto);
     }
+    deleteDeliveryPoint(user, id) {
+        return this.sellersService.deleteDeliveryPoint(user.sub, id);
+    }
     createShippingArea(user, dto) {
         return this.sellersService.createShippingArea(user.sub, dto);
     }
@@ -90,6 +93,14 @@ __decorate([
     __metadata("design:paramtypes", [Object, create_delivery_point_dto_1.CreateDeliveryPointDto]),
     __metadata("design:returntype", void 0)
 ], SellersController.prototype, "createDeliveryPoint", null);
+__decorate([
+    (0, common_1.Delete)('delivery-points/:id'),
+    __param(0, (0, current_user_decorator_1.CurrentUser)()),
+    __param(1, (0, common_1.Param)('id')),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object, String]),
+    __metadata("design:returntype", void 0)
+], SellersController.prototype, "deleteDeliveryPoint", null);
 __decorate([
     (0, common_1.Post)('shipping-areas'),
     __param(0, (0, current_user_decorator_1.CurrentUser)()),

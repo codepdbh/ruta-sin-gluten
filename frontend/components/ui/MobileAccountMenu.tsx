@@ -1,8 +1,8 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
-import Link from 'next/link';
 import { ThemeToggle } from './ThemeToggle';
+import { UserAccountMenu } from './UserAccountMenu';
 
 export function MobileAccountMenu() {
   const [open, setOpen] = useState(false);
@@ -60,14 +60,7 @@ export function MobileAccountMenu() {
             <span>Tema</span>
             <ThemeToggle />
           </div>
-          <div className="mobile-account__links">
-            <Link href="/register" onClick={() => setOpen(false)}>
-              Crear cuenta
-            </Link>
-            <Link href="/login" onClick={() => setOpen(false)}>
-              Ingresar
-            </Link>
-          </div>
+          <UserAccountMenu mobile />
         </div>
       ) : null}
     </div>

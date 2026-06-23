@@ -9,7 +9,11 @@ export declare class ProductsController {
             sellerProfile: {
                 id: string;
                 businessName: string;
+                logoUrl: string | null;
                 businessType: import("@prisma/client").$Enums.BusinessType;
+                country: string;
+                city: string;
+                whatsapp: string;
             };
             photos: {
                 id: string;
@@ -19,11 +23,51 @@ export declare class ProductsController {
             }[];
         } & {
             id: string;
-            sellerProfileId: string;
             name: string;
             createdAt: Date;
             description: string | null;
             updatedAt: Date;
+            sellerProfileId: string;
+            isActive: boolean;
+            category: string;
+            price: number;
+            stockQty: number;
+            stockUnit: string;
+            glutenType: import("@prisma/client").$Enums.GlutenType;
+        })[];
+        pagination: {
+            page: number;
+            pageSize: number;
+            total: number;
+            totalPages: number;
+        };
+    }>;
+    listOwnProducts(user: {
+        sub: string;
+    }, page?: number, pageSize?: number): Promise<{
+        items: ({
+            sellerProfile: {
+                id: string;
+                businessName: string;
+                logoUrl: string | null;
+                businessType: import("@prisma/client").$Enums.BusinessType;
+                country: string;
+                city: string;
+                whatsapp: string;
+            };
+            photos: {
+                id: string;
+                productId: string;
+                fileUrl: string;
+                sortOrder: number;
+            }[];
+        } & {
+            id: string;
+            name: string;
+            createdAt: Date;
+            description: string | null;
+            updatedAt: Date;
+            sellerProfileId: string;
             isActive: boolean;
             category: string;
             price: number;
@@ -42,8 +86,8 @@ export declare class ProductsController {
         sellerProfile: {
             mainLocation: {
                 id: string;
-                sellerProfileId: string;
                 createdAt: Date;
+                sellerProfileId: string;
                 addressText: string;
                 reference: string | null;
                 lat: number | null;
@@ -56,8 +100,10 @@ export declare class ProductsController {
             userId: string;
             businessName: string;
             ownerName: string;
+            logoUrl: string | null;
             businessType: import("@prisma/client").$Enums.BusinessType;
             description: string | null;
+            country: string;
             department: string;
             city: string;
             whatsapp: string;
@@ -74,11 +120,11 @@ export declare class ProductsController {
         }[];
     } & {
         id: string;
-        sellerProfileId: string;
         name: string;
         createdAt: Date;
         description: string | null;
         updatedAt: Date;
+        sellerProfileId: string;
         isActive: boolean;
         category: string;
         price: number;
@@ -97,11 +143,11 @@ export declare class ProductsController {
         }[];
     } & {
         id: string;
-        sellerProfileId: string;
         name: string;
         createdAt: Date;
         description: string | null;
         updatedAt: Date;
+        sellerProfileId: string;
         isActive: boolean;
         category: string;
         price: number;
@@ -120,11 +166,11 @@ export declare class ProductsController {
         }[];
     } & {
         id: string;
-        sellerProfileId: string;
         name: string;
         createdAt: Date;
         description: string | null;
         updatedAt: Date;
+        sellerProfileId: string;
         isActive: boolean;
         category: string;
         price: number;

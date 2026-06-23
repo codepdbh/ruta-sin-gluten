@@ -1,11 +1,28 @@
-'use client';
+"use client";
 
-import { FormEvent, useState } from 'react';
-import { login } from '@/lib/api/services/auth';
-import { saveAuthToken } from '@/lib/api/client';
+import { FormEvent, useState } from "react";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { login } from "@/lib/api/services/auth";
+import { saveAuthToken } from "@/lib/api/client";
+
+function getPostLoginPath(role: string) {
+  if (role === "SELLER") {
+    return "/seller/dashboard";
+  }
+
+  if (role === "ADMIN") {
+    return "/admin/dashboard";
+  }
+
+  return "/mi-cuenta";
+}
 
 export default function LoginPage() {
-  const [message, setMessage] = useState('Iniciá sesión para usar el dashboard seller o admin.');
+  const router = useRouter();
+  const [message, setMessage] = useState(
+    "Iniciá sesión para usar el dashboard seller o admin.",
+  );
   const [loading, setLoading] = useState(false);
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
@@ -13,18 +30,27 @@ export default function LoginPage() {
     const formData = new FormData(event.currentTarget);
 
     setLoading(true);
-    setMessage('Validando credenciales...');
+    setMessage("Validando credenciales...");
 
     try {
       const response = await login({
-        email: String(formData.get('email') ?? ''),
-        password: String(formData.get('password') ?? ''),
+        email: String(formData.get("email") ?? ""),
+        password: String(formData.get("password") ?? ""),
       });
 
       saveAuthToken(response.accessToken);
-      setMessage(`Sesión iniciada como ${response.user.role}. Token guardado en este navegador.`);
+      const nextPath = getPostLoginPath(response.user.role);
+      setMessage(
+        response.user.emailVerified
+          ? "Sesion iniciada. Te llevamos a tu panel..."
+          : "Sesion iniciada. Tu correo todavia no esta verificado; te llevamos a tu cuenta.",
+      );
+      router.replace(nextPath);
+      router.refresh();
     } catch (error) {
-      setMessage(error instanceof Error ? error.message : 'No se pudo iniciar sesión.');
+      setMessage(
+        error instanceof Error ? error.message : "No se pudo iniciar sesión.",
+      );
     } finally {
       setLoading(false);
     }
@@ -37,16 +63,37 @@ export default function LoginPage() {
       <form className="form-grid" onSubmit={handleSubmit}>
         <label>
           Correo
-          <input name="email" type="email" defaultValue="seller@rutasingluten.local" required />
+          <input
+            name="email"
+            type="email"
+            autoComplete="email"
+            placeholder="tu-correo@ejemplo.com"
+            required
+          />
         </label>
         <label>
           Contraseña
-          <input name="password" type="password" defaultValue="Password123!" required />
+          <input
+            name="password"
+            type="password"
+            autoComplete="current-password"
+            placeholder="Tu contraseña"
+            required
+          />
         </label>
         <button className="primary-button" type="submit" disabled={loading}>
-          {loading ? 'Ingresando...' : 'Ingresar'}
+          {loading ? "Ingresando..." : "Ingresar"}
         </button>
       </form>
+      <div className="auth-links">
+        <Link className="inline-link" href="/recuperar-password">
+          ¿Olvidaste tu contraseña?
+        </Link>
+        <p>
+          ¿Sin cuenta aun?{" "}
+          <Link href="/register">Crea una cuenta</Link>
+        </p>
+      </div>
       <p className="status-pill">{message}</p>
     </section>
   );

@@ -7,13 +7,10 @@ import {
   MaxLength,
   MinLength,
 } from 'class-validator';
-import {
-  BusinessType,
-  FoodSafetyModality,
-  RiskLevel,
-} from '@prisma/client';
+import { BusinessType, FoodSafetyModality, RiskLevel } from '@prisma/client';
 
-const trimString = ({ value }: { value: unknown }) => (typeof value === 'string' ? value.trim() : value);
+const trimString = ({ value }: { value: unknown }) =>
+  typeof value === 'string' ? value.trim() : value;
 
 export class UpdateSellerProfileDto {
   @Transform(trimString)
@@ -37,6 +34,11 @@ export class UpdateSellerProfileDto {
   @IsString()
   @MaxLength(600)
   description?: string;
+
+  @Transform(trimString)
+  @IsOptional()
+  @IsString()
+  country?: string;
 
   @Transform(trimString)
   @IsOptional()

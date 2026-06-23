@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Patch, Post, UseGuards } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Patch, Post, UseGuards } from '@nestjs/common';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { Role } from '@prisma/client';
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
@@ -43,6 +43,11 @@ export class SellersController {
   @Post('delivery-points')
   createDeliveryPoint(@CurrentUser() user: { sub: string }, @Body() dto: CreateDeliveryPointDto) {
     return this.sellersService.createDeliveryPoint(user.sub, dto);
+  }
+
+  @Delete('delivery-points/:id')
+  deleteDeliveryPoint(@CurrentUser() user: { sub: string }, @Param('id') id: string) {
+    return this.sellersService.deleteDeliveryPoint(user.sub, id);
   }
 
   @Post('shipping-areas')

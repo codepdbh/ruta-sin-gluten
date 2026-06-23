@@ -45,6 +45,7 @@ let SellersService = class SellersService {
                 ownerName: dto.ownerName,
                 businessType: dto.businessType,
                 description: dto.description,
+                country: dto.country,
                 department: dto.department,
                 city: dto.city,
                 whatsapp: dto.whatsapp,
@@ -58,6 +59,7 @@ let SellersService = class SellersService {
                 ownerName: dto.ownerName,
                 businessType: dto.businessType,
                 description: dto.description,
+                country: dto.country ?? 'Bolivia',
                 department: dto.department,
                 city: dto.city,
                 whatsapp: dto.whatsapp,
@@ -78,6 +80,7 @@ let SellersService = class SellersService {
                 ownerName: dto.ownerName,
                 businessType: dto.businessType,
                 description: dto.description,
+                country: dto.country,
                 department: dto.department,
                 city: dto.city,
                 whatsapp: dto.whatsapp,
@@ -93,7 +96,8 @@ let SellersService = class SellersService {
     }
     async createMainLocation(userId, dto) {
         const profile = await this.ensureProfile(userId);
-        if (profile.hasPhysicalStore && (dto.lat === undefined || dto.lng === undefined)) {
+        if (profile.hasPhysicalStore &&
+            (dto.lat === undefined || dto.lng === undefined)) {
             throw new common_1.BadRequestException('Los comercios con local fisico deben registrar latitud y longitud.');
         }
         const location = await this.prisma.sellerMainLocation.upsert({
@@ -117,6 +121,14 @@ let SellersService = class SellersService {
     }
     async createDeliveryPoint(userId, dto) {
         const profile = await this.ensureProfile(userId);
+        const deliveryPointsCount = await this.prisma.sellerDeliveryPoint.count({
+            where: {
+                sellerProfileId: profile.id,
+            },
+        });
+        if (deliveryPointsCount >= 6) {
+            throw new common_1.BadRequestException('Solo puedes registrar hasta 6 puntos de entrega o comercio.');
+        }
         const point = await this.prisma.sellerDeliveryPoint.create({
             data: {
                 sellerProfileId: profile.id,
@@ -144,8 +156,27 @@ let SellersService = class SellersService {
             },
         });
     }
+    async deleteDeliveryPoint(userId, pointId) {
+        const profile = await this.ensureProfile(userId);
+        const point = await this.prisma.sellerDeliveryPoint.findUnique({
+            where: { id: pointId },
+        });
+        if (!point || point.sellerProfileId !== profile.id) {
+            throw new common_1.NotFoundException('Punto de entrega no encontrado.');
+        }
+        const minimumDeletionDate = new Date(point.createdAt.getTime() + 2 * 24 * 60 * 60 * 1000);
+        if (Date.now() < minimumDeletionDate.getTime()) {
+            throw new common_1.BadRequestException('Este punto debe permanecer al menos 2 dias antes de poder borrarse.');
+        }
+        await this.prisma.sellerDeliveryPoint.delete({
+            where: { id: point.id },
+        });
+        return { success: true };
+    }
     async ensureProfile(userId) {
-        const profile = await this.prisma.sellerProfile.findUnique({ where: { userId } });
+        const profile = await this.prisma.sellerProfile.findUnique({
+            where: { userId },
+        });
         if (!profile) {
             throw new common_1.NotFoundException('Primero debes crear tu perfil de comercio.');
         }

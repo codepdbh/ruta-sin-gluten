@@ -32,7 +32,25 @@ export class ProductsController {
     @Query('page') page?: number,
     @Query('pageSize') pageSize?: number,
   ) {
-    return this.productsService.listProducts({ sellerId, q, category, page, pageSize });
+    return this.productsService.listProducts({
+      sellerId,
+      q,
+      category,
+      page,
+      pageSize,
+    });
+  }
+
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.SELLER)
+  @Get('mine')
+  listOwnProducts(
+    @CurrentUser() user: { sub: string },
+    @Query('page') page?: number,
+    @Query('pageSize') pageSize?: number,
+  ) {
+    return this.productsService.listOwnProducts(user.sub, { page, pageSize });
   }
 
   @Get(':id')
@@ -44,7 +62,10 @@ export class ProductsController {
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(Role.SELLER)
   @Post()
-  createProduct(@CurrentUser() user: { sub: string }, @Body() dto: CreateProductDto) {
+  createProduct(
+    @CurrentUser() user: { sub: string },
+    @Body() dto: CreateProductDto,
+  ) {
     return this.productsService.createProduct(user.sub, dto);
   }
 

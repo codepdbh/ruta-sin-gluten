@@ -1,4 +1,12 @@
-import { Controller, Get, Param, Patch, Body, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  Patch,
+  UseGuards,
+} from '@nestjs/common';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { Role } from '@prisma/client';
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
@@ -16,6 +24,29 @@ import { AdminService } from './admin.service';
 @Controller('admin')
 export class AdminController {
   constructor(private readonly adminService: AdminService) {}
+
+  @Get('users')
+  getUsers() {
+    return this.adminService.getUsers();
+  }
+
+  @Delete('users/:id')
+  deleteUser(
+    @Param('id') id: string,
+    @CurrentUser() user: { sub: string },
+  ) {
+    return this.adminService.deleteUser(id, user.sub);
+  }
+
+  @Get('businesses')
+  getBusinesses() {
+    return this.adminService.getBusinesses();
+  }
+
+  @Delete('businesses/:id')
+  deleteBusiness(@Param('id') id: string) {
+    return this.adminService.deleteBusiness(id);
+  }
 
   @Get('verification/pending')
   getPendingVerifications() {

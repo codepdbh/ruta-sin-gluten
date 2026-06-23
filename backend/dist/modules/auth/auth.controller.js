@@ -18,8 +18,10 @@ const swagger_1 = require("@nestjs/swagger");
 const current_user_decorator_1 = require("../../common/decorators/current-user.decorator");
 const jwt_auth_guard_1 = require("../../common/guards/jwt-auth.guard");
 const auth_service_1 = require("./auth.service");
+const forgot_password_dto_1 = require("./dto/forgot-password.dto");
 const login_dto_1 = require("./dto/login.dto");
 const register_dto_1 = require("./dto/register.dto");
+const reset_password_dto_1 = require("./dto/reset-password.dto");
 let AuthController = class AuthController {
     authService;
     constructor(authService) {
@@ -30,6 +32,18 @@ let AuthController = class AuthController {
     }
     login(dto) {
         return this.authService.login(dto);
+    }
+    confirmEmailVerification(token) {
+        return this.authService.confirmEmailVerification(token);
+    }
+    requestPasswordReset(dto) {
+        return this.authService.requestPasswordReset(dto);
+    }
+    resetPassword(dto) {
+        return this.authService.resetPassword(dto);
+    }
+    resendEmailVerification(user) {
+        return this.authService.resendEmailVerification(user.sub);
     }
     me(user) {
         return this.authService.me(user.sub);
@@ -50,6 +64,36 @@ __decorate([
     __metadata("design:paramtypes", [login_dto_1.LoginDto]),
     __metadata("design:returntype", void 0)
 ], AuthController.prototype, "login", null);
+__decorate([
+    (0, common_1.Post)('email-verification/confirm'),
+    __param(0, (0, common_1.Body)('token')),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String]),
+    __metadata("design:returntype", void 0)
+], AuthController.prototype, "confirmEmailVerification", null);
+__decorate([
+    (0, common_1.Post)('password/forgot'),
+    __param(0, (0, common_1.Body)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [forgot_password_dto_1.ForgotPasswordDto]),
+    __metadata("design:returntype", void 0)
+], AuthController.prototype, "requestPasswordReset", null);
+__decorate([
+    (0, common_1.Post)('password/reset'),
+    __param(0, (0, common_1.Body)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [reset_password_dto_1.ResetPasswordDto]),
+    __metadata("design:returntype", void 0)
+], AuthController.prototype, "resetPassword", null);
+__decorate([
+    (0, swagger_1.ApiBearerAuth)(),
+    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
+    (0, common_1.Post)('email-verification/resend'),
+    __param(0, (0, current_user_decorator_1.CurrentUser)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object]),
+    __metadata("design:returntype", void 0)
+], AuthController.prototype, "resendEmailVerification", null);
 __decorate([
     (0, swagger_1.ApiBearerAuth)(),
     (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),

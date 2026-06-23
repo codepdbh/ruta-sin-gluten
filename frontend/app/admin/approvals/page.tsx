@@ -2,11 +2,12 @@
 
 import { useEffect, useState } from 'react';
 import { getPendingVerifications, reviewVerification } from '@/lib/api/services/admin';
+import { buildAssetUrl } from '@/lib/api/client';
 import type { VerificationItem } from '@/lib/types';
 
 export default function AdminApprovalsPage() {
   const [items, setItems] = useState<VerificationItem[]>([]);
-  const [message, setMessage] = useState('Cargá una sesión ADMIN para revisar videos.');
+  const [message, setMessage] = useState('Inicia sesion como ADMIN para revisar videos.');
   const [reloadKey, setReloadKey] = useState(0);
 
   useEffect(() => {
@@ -37,7 +38,7 @@ export default function AdminApprovalsPage() {
     try {
       await reviewVerification(id, {
         status,
-        notes: `Revisión ${status.toLowerCase()} desde el panel MVP.`,
+        notes: `Revision ${status.toLowerCase()} desde el panel admin.`,
       });
       setReloadKey((current) => current + 1);
     } catch (error) {
@@ -46,27 +47,38 @@ export default function AdminApprovalsPage() {
   }
 
   return (
-    <section className="page-card">
-      <p className="eyebrow">Admin</p>
-      <h1>Aprobaciones de verificación</h1>
+    <section className="page-card admin-review-page">
+      <div className="directory-page__header">
+        <div>
+          <p className="eyebrow">Admin</p>
+          <h1>Aprobaciones de verificacion</h1>
+          <p className="muted">Control de confianza para comercios que quieren aparecer como verificados.</p>
+        </div>
+      </div>
       <p className="status-pill">{message}</p>
+      {!items.length ? <p className="empty-state">Cuando existan solicitudes nuevas apareceran aqui.</p> : null}
       <div className="data-list">
         {items.map((item) => (
-          <article key={item.id} className="panel-card">
-            <h2>{item.sellerProfile.businessName}</h2>
-            <p>
-              {item.sellerProfile.user.name} · {item.sellerProfile.user.email}
-            </p>
-            <video className="video-frame" controls src={`${process.env.NEXT_PUBLIC_API_BASE_URL}${item.videoUrl}`} />
-            <div className="inline-actions">
+          <article key={item.id} className="panel-card admin-review-card">
+            <div className="admin-review-card__header">
+              <div>
+                <span className="task-card__meta">Comercio</span>
+                <h2>{item.sellerProfile.businessName}</h2>
+                <p>
+                  {item.sellerProfile.user.name} · {item.sellerProfile.user.email}
+                </p>
+              </div>
+            </div>
+            <video className="video-frame" controls src={buildAssetUrl(item.videoUrl)} />
+            <div className="inline-actions admin-review-card__actions">
               <button className="primary-button" type="button" onClick={() => void handleReview(item.id, 'APPROVED')}>
-                Approve
+                Aprobar
               </button>
               <button className="secondary-button" type="button" onClick={() => void handleReview(item.id, 'OBSERVED')}>
-                Observe
+                Observar
               </button>
               <button className="secondary-button" type="button" onClick={() => void handleReview(item.id, 'REJECTED')}>
-                Reject
+                Rechazar
               </button>
             </div>
           </article>

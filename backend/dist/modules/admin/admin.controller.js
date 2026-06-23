@@ -28,6 +28,18 @@ let AdminController = class AdminController {
     constructor(adminService) {
         this.adminService = adminService;
     }
+    getUsers() {
+        return this.adminService.getUsers();
+    }
+    deleteUser(id, user) {
+        return this.adminService.deleteUser(id, user.sub);
+    }
+    getBusinesses() {
+        return this.adminService.getBusinesses();
+    }
+    deleteBusiness(id) {
+        return this.adminService.deleteBusiness(id);
+    }
     getPendingVerifications() {
         return this.adminService.getPendingVerifications();
     }
@@ -42,6 +54,33 @@ let AdminController = class AdminController {
     }
 };
 exports.AdminController = AdminController;
+__decorate([
+    (0, common_1.Get)('users'),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", []),
+    __metadata("design:returntype", void 0)
+], AdminController.prototype, "getUsers", null);
+__decorate([
+    (0, common_1.Delete)('users/:id'),
+    __param(0, (0, common_1.Param)('id')),
+    __param(1, (0, current_user_decorator_1.CurrentUser)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String, Object]),
+    __metadata("design:returntype", void 0)
+], AdminController.prototype, "deleteUser", null);
+__decorate([
+    (0, common_1.Get)('businesses'),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", []),
+    __metadata("design:returntype", void 0)
+], AdminController.prototype, "getBusinesses", null);
+__decorate([
+    (0, common_1.Delete)('businesses/:id'),
+    __param(0, (0, common_1.Param)('id')),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String]),
+    __metadata("design:returntype", void 0)
+], AdminController.prototype, "deleteBusiness", null);
 __decorate([
     (0, common_1.Get)('verification/pending'),
     __metadata("design:type", Function),

@@ -65,17 +65,26 @@ enum SuggestionStatus {
 }
 
 model User {
-  id                    String                   @id @default(uuid())
-  name                  String
-  email                 String                   @unique
-  passwordHash          String                   @map("password_hash")
-  role                  Role                     @default(USER)
-  phone                 String?
-  createdAt             DateTime                 @default(now()) @map("created_at")
-  sellerProfile         SellerProfile?
-  suggestions           PlaceSuggestion[]
-  reviewedVerifications VerificationSubmission[] @relation("VerificationReviewer")
+  id                              String                   @id @default(uuid())
+  name                            String
+  email                           String                   @unique
+  passwordHash                    String                   @map("password_hash")
+  role                            Role                     @default(USER)
+  phone                           String?
+  avatarUrl                       String?                  @map("avatar_url")
+  emailVerifiedAt                 DateTime?                @map("email_verified_at")
+  emailVerificationTokenHash      String?                  @map("email_verification_token_hash")
+  emailVerificationTokenExpiresAt DateTime?                @map("email_verification_token_expires_at")
+  passwordResetTokenHash          String?                  @map("password_reset_token_hash")
+  passwordResetTokenExpiresAt     DateTime?                @map("password_reset_token_expires_at")
+  createdAt                       DateTime                 @default(now()) @map("created_at")
+  sellerProfile                   SellerProfile?
+  suggestions                     PlaceSuggestion[]
+  placeRatings                    PlaceRating[]
+  reviewedVerifications           VerificationSubmission[] @relation("VerificationReviewer")
 
+  @@index([emailVerificationTokenHash])
+  @@index([passwordResetTokenHash])
   @@map("users")
 }
 
@@ -84,8 +93,10 @@ model SellerProfile {
   userId                  String                   @unique @map("user_id")
   businessName            String                   @map("business_name")
   ownerName               String                   @map("owner_name")
+  logoUrl                 String?                  @map("logo_url")
   businessType            BusinessType             @map("business_type")
   description             String?
+  country                 String                   @default("Bolivia")
   department              String
   city                    String
   whatsapp                String
@@ -102,38 +113,56 @@ model SellerProfile {
   products                Product[]
   foodSafetyInfo          FoodSafetyInfo?
   verificationSubmissions VerificationSubmission[]
+  ratings                 PlaceRating[]
 
   @@index([status, isPublic])
   @@map("seller_profiles")
 }
 
+model PlaceRating {
+  id              String        @id @default(uuid())
+  sellerProfileId String        @map("seller_profile_id")
+  userId          String        @map("user_id")
+  score           Int
+  comment         String?
+  createdAt       DateTime      @default(now()) @map("created_at")
+  updatedAt       DateTime      @updatedAt @map("updated_at")
+  sellerProfile   SellerProfile @relation(fields: [sellerProfileId], references: [id], onDelete: Cascade)
+  user            User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([sellerProfileId, userId])
+  @@index([sellerProfileId, score])
+  @@index([userId])
+  @@map("place_ratings")
+}
+
 model SellerMainLocation {
-  id              String                           @id @default(uuid())
-  sellerProfileId String                           @unique @map("seller_profile_id")
-  addressText     String                           @map("address_text")
+  id              String                                @id @default(uuid())
+  sellerProfileId String                                @unique @map("seller_profile_id")
+  addressText     String                                @map("address_text")
   reference       String?
   lat             Float?
   lng             Float?
   geom            Unsupported("geometry(Point, 4326)")?
-  createdAt       DateTime                         @default(now()) @map("created_at")
-  sellerProfile   SellerProfile                    @relation(fields: [sellerProfileId], references: [id], onDelete: Cascade)
+  createdAt       DateTime                              @default(now()) @map("created_at")
+  sellerProfile   SellerProfile                         @relation(fields: [sellerProfileId], references: [id], onDelete: Cascade)
 
   @@map("seller_main_location")
 }
 
 model SellerDeliveryPoint {
-  id              String                           @id @default(uuid())
-  sellerProfileId String                           @map("seller_profile_id")
+  id              String                                @id @default(uuid())
+  sellerProfileId String                                @map("seller_profile_id")
   name            String
-  addressText     String                           @map("address_text")
+  addressText     String                                @map("address_text")
   reference       String?
   schedule        String?
   lat             Float?
   lng             Float?
   geom            Unsupported("geometry(Point, 4326)")?
-  isActive        Boolean                          @default(true) @map("is_active")
-  createdAt       DateTime                         @default(now()) @map("created_at")
-  sellerProfile   SellerProfile                    @relation(fields: [sellerProfileId], references: [id], onDelete: Cascade)
+  isActive        Boolean                               @default(true) @map("is_active")
+  createdAt       DateTime                              @default(now()) @map("created_at")
+  sellerProfile   SellerProfile                         @relation(fields: [sellerProfileId], references: [id], onDelete: Cascade)
 
   @@index([sellerProfileId, isActive])
   @@map("seller_delivery_points")
@@ -155,19 +184,19 @@ model SellerShippingArea {
 }
 
 model Product {
-  id              String        @id @default(uuid())
-  sellerProfileId String        @map("seller_profile_id")
+  id              String         @id @default(uuid())
+  sellerProfileId String         @map("seller_profile_id")
   name            String
   category        String
   description     String?
   price           Float
-  stockQty        Float         @map("stock_qty")
-  stockUnit       String        @map("stock_unit")
-  glutenType      GlutenType    @map("gluten_type")
-  isActive        Boolean       @default(true) @map("is_active")
-  createdAt       DateTime      @default(now()) @map("created_at")
-  updatedAt       DateTime      @updatedAt @map("updated_at")
-  sellerProfile   SellerProfile @relation(fields: [sellerProfileId], references: [id], onDelete: Cascade)
+  stockQty        Float          @map("stock_qty")
+  stockUnit       String         @map("stock_unit")
+  glutenType      GlutenType     @map("gluten_type")
+  isActive        Boolean        @default(true) @map("is_active")
+  createdAt       DateTime       @default(now()) @map("created_at")
+  updatedAt       DateTime       @updatedAt @map("updated_at")
+  sellerProfile   SellerProfile  @relation(fields: [sellerProfileId], references: [id], onDelete: Cascade)
   photos          ProductPhoto[]
 
   @@index([sellerProfileId, isActive])

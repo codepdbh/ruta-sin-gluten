@@ -8,12 +8,12 @@ export declare class SuggestionsService {
         id: string;
         createdAt: Date;
         userId: string | null;
-        placeName: string;
-        typeGuess: string;
         addressText: string;
         reference: string | null;
         lat: number | null;
         lng: number | null;
+        placeName: string;
+        typeGuess: string;
         comment: string | null;
     }, never, import("@prisma/client/runtime/library").DefaultArgs, import("@prisma/client").Prisma.PrismaClientOptions>;
 }

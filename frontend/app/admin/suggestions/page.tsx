@@ -43,18 +43,28 @@ export default function AdminSuggestionsPage() {
   }
 
   return (
-    <section className="page-card">
-      <p className="eyebrow">Admin</p>
-      <h1>Sugerencias pendientes</h1>
+    <section className="page-card admin-review-page">
+      <div className="directory-page__header">
+        <div>
+          <p className="eyebrow">Admin</p>
+          <h1>Sugerencias pendientes</h1>
+          <p className="muted">Aportes de la comunidad listos para validar, convertir o descartar.</p>
+        </div>
+      </div>
       <p className="status-pill">{message}</p>
+      {!items.length ? <p className="empty-state">Cuando la comunidad sugiera lugares nuevos apareceran aqui.</p> : null}
       <div className="data-list">
         {items.map((item) => (
-          <article key={item.id} className="result-card">
-            <h2>{item.placeName}</h2>
-            <p>{item.typeGuess}</p>
-            <p>{item.addressText}</p>
+          <article key={item.id} className="result-card admin-review-card">
+            <div className="admin-review-card__header">
+              <div>
+                <span className="task-card__meta">{item.typeGuess}</span>
+                <h2>{item.placeName}</h2>
+                <p>{item.addressText}</p>
+              </div>
+            </div>
             <p>{item.comment}</p>
-            <div className="inline-actions">
+            <div className="inline-actions admin-review-card__actions">
               <button className="primary-button" type="button" onClick={() => void handleReview(item.id, 'APPROVED')}>
                 Aprobar
               </button>
