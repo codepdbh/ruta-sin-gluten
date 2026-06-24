@@ -1,18 +1,22 @@
 import { Transform, Type } from 'class-transformer';
-import { IsOptional, IsString } from 'class-validator';
+import { IsNumber, IsOptional, IsString } from 'class-validator';
 import { BusinessType, FoodSafetyModality } from '@prisma/client';
 
 export class GetPlacesInBoundsDto {
   @Type(() => Number)
+  @IsNumber()
   minLat: number;
 
   @Type(() => Number)
+  @IsNumber()
   minLng: number;
 
   @Type(() => Number)
+  @IsNumber()
   maxLat: number;
 
   @Type(() => Number)
+  @IsNumber()
   maxLng: number;
 
   @IsOptional()

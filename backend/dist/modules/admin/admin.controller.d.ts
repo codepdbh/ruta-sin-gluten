@@ -4,6 +4,82 @@ import { AdminService } from './admin.service';
 export declare class AdminController {
     private readonly adminService;
     constructor(adminService: AdminService);
+    getUsers(): Promise<{
+        emailVerified: boolean;
+        sellerProfile: {
+            status: import("@prisma/client").$Enums.SellerProfileStatus;
+            id: string;
+            businessName: string;
+            isPublic: boolean;
+        } | null;
+        role: import("@prisma/client").$Enums.Role;
+        id: string;
+        name: string;
+        email: string;
+        phone: string | null;
+        avatarUrl: string | null;
+        emailVerifiedAt: Date | null;
+        createdAt: Date;
+    }[]>;
+    deleteUser(id: string, user: {
+        sub: string;
+    }): Promise<{
+        id: string;
+        name: string;
+        email: string;
+        role: import("@prisma/client").$Enums.Role;
+        businessName: string | null;
+        deleted: boolean;
+    }>;
+    getBusinesses(): Promise<{
+        id: string;
+        businessName: string;
+        ownerName: string;
+        businessType: import("@prisma/client").$Enums.BusinessType;
+        country: string;
+        department: string;
+        city: string;
+        whatsapp: string;
+        hasPhysicalStore: boolean;
+        hasShipping: boolean;
+        status: import("@prisma/client").$Enums.SellerProfileStatus;
+        isPublic: boolean;
+        createdAt: Date;
+        user: {
+            emailVerified: boolean;
+            id: string;
+            name: string;
+            email: string;
+            phone: string | null;
+            emailVerifiedAt: Date | null;
+        };
+        mainLocation: {
+            id: string;
+            createdAt: Date;
+            sellerProfileId: string;
+            addressText: string;
+            reference: string | null;
+            lat: number | null;
+            lng: number | null;
+        } | null;
+        counts: {
+            products: number;
+            deliveryPoints: number;
+            verificationSubmissions: number;
+        };
+        verification: {
+            id: string;
+            status: import("@prisma/client").$Enums.VerificationStatus;
+            videoUrl: string;
+            submittedAt: Date;
+            reviewedAt: Date | null;
+        } | null;
+    }[]>;
+    deleteBusiness(id: string): Promise<{
+        id: string;
+        businessName: string;
+        deleted: boolean;
+    }>;
     getPendingVerifications(): import("@prisma/client").Prisma.PrismaPromise<({
         sellerProfile: {
             user: {
@@ -18,8 +94,10 @@ export declare class AdminController {
             userId: string;
             businessName: string;
             ownerName: string;
+            logoUrl: string | null;
             businessType: import("@prisma/client").$Enums.BusinessType;
             description: string | null;
+            country: string;
             department: string;
             city: string;
             whatsapp: string;
@@ -31,24 +109,24 @@ export declare class AdminController {
     } & {
         status: import("@prisma/client").$Enums.VerificationStatus;
         id: string;
+        submittedAt: Date;
         sellerProfileId: string;
         videoUrl: string;
         adminNotes: string | null;
         reviewedBy: string | null;
         reviewedAt: Date | null;
-        submittedAt: Date;
     })[]>;
     reviewVerification(id: string, user: {
         sub: string;
     }, dto: ReviewVerificationDto): Promise<{
         status: import("@prisma/client").$Enums.VerificationStatus;
         id: string;
+        submittedAt: Date;
         sellerProfileId: string;
         videoUrl: string;
         adminNotes: string | null;
         reviewedBy: string | null;
         reviewedAt: Date | null;
-        submittedAt: Date;
     }>;
     getPendingSuggestions(): import("@prisma/client").Prisma.PrismaPromise<({
         user: {
@@ -61,12 +139,12 @@ export declare class AdminController {
         id: string;
         createdAt: Date;
         userId: string | null;
-        placeName: string;
-        typeGuess: string;
         addressText: string;
         reference: string | null;
         lat: number | null;
         lng: number | null;
+        placeName: string;
+        typeGuess: string;
         comment: string | null;
     })[]>;
     reviewSuggestion(id: string, dto: ReviewSuggestionDto): Promise<{
@@ -74,12 +152,12 @@ export declare class AdminController {
         id: string;
         createdAt: Date;
         userId: string | null;
-        placeName: string;
-        typeGuess: string;
         addressText: string;
         reference: string | null;
         lat: number | null;
         lng: number | null;
+        placeName: string;
+        typeGuess: string;
         comment: string | null;
     }>;
 }

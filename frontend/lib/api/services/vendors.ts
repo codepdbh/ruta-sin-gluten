@@ -1,7 +1,8 @@
 import { apiFetch } from '../client';
+import type { SellerProfile } from '@/lib/types';
 
 export function getSellerProfile() {
-  return apiFetch('/sellers/me', {
+  return apiFetch<SellerProfile | null>('/sellers/me', {
     auth: true,
   });
 }
@@ -35,6 +36,13 @@ export function createDeliveryPoint(payload: Record<string, unknown>) {
     method: 'POST',
     auth: true,
     body: payload,
+  });
+}
+
+export function deleteDeliveryPoint(id: string) {
+  return apiFetch(`/sellers/delivery-points/${id}`, {
+    method: 'DELETE',
+    auth: true,
   });
 }
 

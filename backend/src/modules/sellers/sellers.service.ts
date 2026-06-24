@@ -1,4 +1,9 @@
-import { BadRequestException, ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  ForbiddenException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { Prisma, Role, SellerProfileStatus } from '@prisma/client';
 import { PrismaService } from '../../database/prisma.service';
 import { CreateDeliveryPointDto } from './dto/create-delivery-point.dto';
@@ -39,6 +44,7 @@ export class SellersService {
         ownerName: dto.ownerName,
         businessType: dto.businessType,
         description: dto.description,
+        country: dto.country,
         department: dto.department,
         city: dto.city,
         whatsapp: dto.whatsapp,
@@ -52,6 +58,7 @@ export class SellersService {
         ownerName: dto.ownerName,
         businessType: dto.businessType,
         description: dto.description,
+        country: dto.country ?? 'Bolivia',
         department: dto.department,
         city: dto.city,
         whatsapp: dto.whatsapp,
@@ -76,6 +83,7 @@ export class SellersService {
         ownerName: dto.ownerName,
         businessType: dto.businessType,
         description: dto.description,
+        country: dto.country,
         department: dto.department,
         city: dto.city,
         whatsapp: dto.whatsapp,
@@ -96,8 +104,13 @@ export class SellersService {
   async createMainLocation(userId: string, dto: CreateMainLocationDto) {
     const profile = await this.ensureProfile(userId);
 
-    if (profile.hasPhysicalStore && (dto.lat === undefined || dto.lng === undefined)) {
-      throw new BadRequestException('Los comercios con local fisico deben registrar latitud y longitud.');
+    if (
+      profile.hasPhysicalStore &&
+      (dto.lat === undefined || dto.lng === undefined)
+    ) {
+      throw new BadRequestException(
+        'Los comercios con local fisico deben registrar latitud y longitud.',
+      );
     }
 
     const location = await this.prisma.sellerMainLocation.upsert({
@@ -124,6 +137,18 @@ export class SellersService {
 
   async createDeliveryPoint(userId: string, dto: CreateDeliveryPointDto) {
     const profile = await this.ensureProfile(userId);
+
+    const deliveryPointsCount = await this.prisma.sellerDeliveryPoint.count({
+      where: {
+        sellerProfileId: profile.id,
+      },
+    });
+
+    if (deliveryPointsCount >= 6) {
+      throw new BadRequestException(
+        'Solo puedes registrar hasta 6 puntos de entrega o comercio.',
+      );
+    }
 
     const point = await this.prisma.sellerDeliveryPoint.create({
       data: {
@@ -157,8 +182,37 @@ export class SellersService {
     });
   }
 
+  async deleteDeliveryPoint(userId: string, pointId: string) {
+    const profile = await this.ensureProfile(userId);
+    const point = await this.prisma.sellerDeliveryPoint.findUnique({
+      where: { id: pointId },
+    });
+
+    if (!point || point.sellerProfileId !== profile.id) {
+      throw new NotFoundException('Punto de entrega no encontrado.');
+    }
+
+    const minimumDeletionDate = new Date(
+      point.createdAt.getTime() + 2 * 24 * 60 * 60 * 1000,
+    );
+
+    if (Date.now() < minimumDeletionDate.getTime()) {
+      throw new BadRequestException(
+        'Este punto debe permanecer al menos 2 dias antes de poder borrarse.',
+      );
+    }
+
+    await this.prisma.sellerDeliveryPoint.delete({
+      where: { id: point.id },
+    });
+
+    return { success: true };
+  }
+
   private async ensureProfile(userId: string) {
-    const profile = await this.prisma.sellerProfile.findUnique({ where: { userId } });
+    const profile = await this.prisma.sellerProfile.findUnique({
+      where: { userId },
+    });
 
     if (!profile) {
       throw new NotFoundException('Primero debes crear tu perfil de comercio.');
@@ -198,7 +252,10 @@ export class SellersService {
   }
 
   private async syncMainLocationGeom(id: string, lat?: number, lng?: number) {
-    await this.prisma.$executeRawUnsafe('UPDATE seller_main_location SET geom = NULL WHERE id = $1::uuid', id);
+    await this.prisma.$executeRawUnsafe(
+      'UPDATE seller_main_location SET geom = NULL WHERE id = $1::uuid',
+      id,
+    );
 
     if (lat === undefined || lng === undefined) {
       return;
@@ -213,7 +270,10 @@ export class SellersService {
   }
 
   private async syncDeliveryPointGeom(id: string, lat?: number, lng?: number) {
-    await this.prisma.$executeRawUnsafe('UPDATE seller_delivery_points SET geom = NULL WHERE id = $1::uuid', id);
+    await this.prisma.$executeRawUnsafe(
+      'UPDATE seller_delivery_points SET geom = NULL WHERE id = $1::uuid',
+      id,
+    );
 
     if (lat === undefined || lng === undefined) {
       return;

@@ -7,10 +7,17 @@ type ApiFetchOptions = Omit<RequestInit, 'body'> & {
   query?: Record<string, QueryValue>;
 };
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL ?? 'http://localhost:4101';
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL ?? '/api';
+export const AUTH_EVENT = 'rutasingluten-auth-change';
 
 function buildUrl(path: string, query?: Record<string, QueryValue>) {
-  const url = new URL(path, API_BASE_URL);
+  const origin =
+    typeof window !== 'undefined' ? window.location.origin : 'http://127.0.0.1';
+  const normalizedBase = API_BASE_URL.startsWith('http')
+    ? API_BASE_URL
+    : new URL(API_BASE_URL, origin).toString();
+  const normalizedPath = path.startsWith('/') ? path.slice(1) : path;
+  const url = new URL(normalizedPath, `${normalizedBase.replace(/\/$/, '')}/`);
 
   if (query) {
     Object.entries(query).forEach(([key, value]) => {
@@ -21,6 +28,20 @@ function buildUrl(path: string, query?: Record<string, QueryValue>) {
   }
 
   return url.toString();
+}
+
+export function buildAssetUrl(path: string) {
+  if (!path) {
+    return path;
+  }
+
+  const origin =
+    typeof window !== 'undefined' ? window.location.origin : 'http://127.0.0.1';
+  const normalizedBase = API_BASE_URL.startsWith('http')
+    ? API_BASE_URL
+    : new URL(API_BASE_URL, origin).toString();
+
+  return new URL(path.startsWith('/') ? path.slice(1) : path, `${normalizedBase.replace(/\/$/, '')}/`).toString();
 }
 
 function getClientToken(explicitToken?: string) {
@@ -63,11 +84,13 @@ export async function apiFetch<T>(path: string, options: ApiFetchOptions = {}): 
     cache: 'no-store',
   });
 
+  const responseText = response.status === 204 ? '' : await response.text();
+
   if (!response.ok) {
     let message = 'No se pudo completar la solicitud.';
 
     try {
-      const payload = (await response.json()) as { message?: string | string[] };
+      const payload = JSON.parse(responseText) as { message?: string | string[] };
 
       if (Array.isArray(payload.message)) {
         message = payload.message.join(', ');
@@ -75,9 +98,8 @@ export async function apiFetch<T>(path: string, options: ApiFetchOptions = {}): 
         message = payload.message;
       }
     } catch {
-      const text = await response.text();
-      if (text) {
-        message = text;
+      if (responseText) {
+        message = responseText;
       }
     }
 
@@ -88,17 +110,19 @@ export async function apiFetch<T>(path: string, options: ApiFetchOptions = {}): 
     return undefined as T;
   }
 
-  return (await response.json()) as T;
+  return responseText ? (JSON.parse(responseText) as T) : (undefined as T);
 }
 
 export function saveAuthToken(token: string) {
   if (typeof window !== 'undefined') {
     window.localStorage.setItem('rutasingluten_token', token);
+    window.dispatchEvent(new CustomEvent(AUTH_EVENT));
   }
 }
 
 export function clearAuthToken() {
   if (typeof window !== 'undefined') {
     window.localStorage.removeItem('rutasingluten_token');
+    window.dispatchEvent(new CustomEvent(AUTH_EVENT));
   }
 }

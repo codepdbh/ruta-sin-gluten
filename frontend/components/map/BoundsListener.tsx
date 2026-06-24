@@ -1,7 +1,7 @@
-'use client';
+"use client";
 
-import { useEffect, useRef } from 'react';
-import { useMap, useMapEvents } from 'react-leaflet';
+import { useEffect, useRef } from "react";
+import { useMap, useMapEvents } from "react-leaflet";
 
 type BoundsPayload = {
   minLat: number;
@@ -27,14 +27,39 @@ function serializeBounds(map: ReturnType<typeof useMap>) {
 
 export function BoundsListener({ onBoundsChange }: BoundsListenerProps) {
   const callbackRef = useRef(onBoundsChange);
+  const timerRef = useRef<number | null>(null);
+  const lastBoundsRef = useRef("");
   const map = useMapEvents({
     moveend: () => {
-      void callbackRef.current(serializeBounds(map));
+      scheduleBoundsChange();
     },
     zoomend: () => {
-      void callbackRef.current(serializeBounds(map));
+      scheduleBoundsChange();
     },
   });
+
+  function scheduleBoundsChange() {
+    if (timerRef.current) {
+      window.clearTimeout(timerRef.current);
+    }
+
+    timerRef.current = window.setTimeout(() => {
+      const bounds = serializeBounds(map);
+      const serialized = [
+        bounds.minLat.toFixed(5),
+        bounds.minLng.toFixed(5),
+        bounds.maxLat.toFixed(5),
+        bounds.maxLng.toFixed(5),
+      ].join(":");
+
+      if (serialized === lastBoundsRef.current) {
+        return;
+      }
+
+      lastBoundsRef.current = serialized;
+      void callbackRef.current(bounds);
+    }, 180);
+  }
 
   useEffect(() => {
     callbackRef.current = onBoundsChange;
@@ -42,6 +67,11 @@ export function BoundsListener({ onBoundsChange }: BoundsListenerProps) {
 
   useEffect(() => {
     void callbackRef.current(serializeBounds(map));
+    return () => {
+      if (timerRef.current) {
+        window.clearTimeout(timerRef.current);
+      }
+    };
   }, [map]);
 
   return null;

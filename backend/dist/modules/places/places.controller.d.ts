@@ -1,5 +1,6 @@
 import { GetPlacesInBoundsDto } from './dto/get-places-in-bounds.dto';
 import { GetPlacesNearbyDto } from './dto/get-places-nearby.dto';
+import { RatePlaceDto } from './dto/rate-place.dto';
 import { PlacesService } from './places.service';
 export declare class PlacesController {
     private readonly placesService;
@@ -8,8 +9,10 @@ export declare class PlacesController {
         id: string;
         businessName: string;
         ownerName: string;
+        logoUrl: string | null;
         businessType: import("@prisma/client").$Enums.BusinessType;
         description: string | null;
+        country: string;
         department: string;
         city: string;
         whatsapp: string;
@@ -20,6 +23,8 @@ export declare class PlacesController {
         modality: import("@prisma/client").$Enums.FoodSafetyModality | null;
         crossContaminationRisk: import("@prisma/client").$Enums.RiskLevel | null;
         verificationStatus: import("@prisma/client").$Enums.VerificationStatus;
+        ratingAverage: number;
+        ratingCount: number;
         location: {
             kind: string;
             lat: number;
@@ -44,11 +49,11 @@ export declare class PlacesController {
             }[];
         } & {
             id: string;
-            sellerProfileId: string;
             name: string;
             createdAt: Date;
             description: string | null;
             updatedAt: Date;
+            sellerProfileId: string;
             isActive: boolean;
             category: string;
             price: number;
@@ -63,8 +68,10 @@ export declare class PlacesController {
         id: string;
         businessName: string;
         ownerName: string;
+        logoUrl: string | null;
         businessType: import("@prisma/client").$Enums.BusinessType;
         description: string | null;
+        country: string;
         department: string;
         city: string;
         whatsapp: string;
@@ -75,6 +82,8 @@ export declare class PlacesController {
         modality: import("@prisma/client").$Enums.FoodSafetyModality | null;
         crossContaminationRisk: import("@prisma/client").$Enums.RiskLevel | null;
         verificationStatus: import("@prisma/client").$Enums.VerificationStatus;
+        ratingAverage: number;
+        ratingCount: number;
         location: {
             kind: string;
             lat: number;
@@ -99,11 +108,11 @@ export declare class PlacesController {
             }[];
         } & {
             id: string;
-            sellerProfileId: string;
             name: string;
             createdAt: Date;
             description: string | null;
             updatedAt: Date;
+            sellerProfileId: string;
             isActive: boolean;
             category: string;
             price: number;
@@ -113,6 +122,26 @@ export declare class PlacesController {
         })[];
         shippingAreasCount: number;
     } | null)[]>;
+    getMyPlaceRating(id: string, user: {
+        sub: string;
+    }): Promise<{
+        rating: {
+            updatedAt: Date;
+            comment: string | null;
+            score: number;
+        } | null;
+    }>;
+    ratePlace(id: string, user: {
+        sub: string;
+    }, dto: RatePlaceDto): Promise<{
+        ratingAverage: number;
+        ratingCount: number;
+        rating: {
+            updatedAt: Date;
+            comment: string | null;
+            score: number;
+        };
+    }>;
     getPlaceById(id: string): Promise<{
         owner: {
             id: string;
@@ -127,11 +156,11 @@ export declare class PlacesController {
             }[];
         } & {
             id: string;
-            sellerProfileId: string;
             name: string;
             createdAt: Date;
             description: string | null;
             updatedAt: Date;
+            sellerProfileId: string;
             isActive: boolean;
             category: string;
             price: number;
@@ -141,22 +170,22 @@ export declare class PlacesController {
         })[];
         deliveryPoints: {
             id: string;
-            sellerProfileId: string;
             name: string;
             createdAt: Date;
+            sellerProfileId: string;
             addressText: string;
             reference: string | null;
             lat: number | null;
             lng: number | null;
-            isActive: boolean;
             schedule: string | null;
+            isActive: boolean;
         }[];
         shippingAreas: {
             id: string;
-            sellerProfileId: string;
             createdAt: Date;
             department: string;
             city: string | null;
+            sellerProfileId: string;
             deliveryType: string;
             cost: number | null;
             etaText: string | null;
@@ -164,8 +193,10 @@ export declare class PlacesController {
         id: string;
         businessName: string;
         ownerName: string;
+        logoUrl: string | null;
         businessType: import("@prisma/client").$Enums.BusinessType;
         description: string | null;
+        country: string;
         department: string;
         city: string;
         whatsapp: string;
@@ -176,6 +207,8 @@ export declare class PlacesController {
         modality: import("@prisma/client").$Enums.FoodSafetyModality | null;
         crossContaminationRisk: import("@prisma/client").$Enums.RiskLevel | null;
         verificationStatus: import("@prisma/client").$Enums.VerificationStatus;
+        ratingAverage: number;
+        ratingCount: number;
         location: {
             kind: string;
             lat: number;
@@ -200,11 +233,11 @@ export declare class PlacesController {
             }[];
         } & {
             id: string;
-            sellerProfileId: string;
             name: string;
             createdAt: Date;
             description: string | null;
             updatedAt: Date;
+            sellerProfileId: string;
             isActive: boolean;
             category: string;
             price: number;

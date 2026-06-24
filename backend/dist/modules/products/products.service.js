@@ -47,7 +47,11 @@ let ProductsService = class ProductsService {
                         select: {
                             id: true,
                             businessName: true,
+                            logoUrl: true,
                             businessType: true,
+                            whatsapp: true,
+                            country: true,
+                            city: true,
                         },
                     },
                 },
@@ -90,6 +94,46 @@ let ProductsService = class ProductsService {
             throw new common_1.NotFoundException('Producto no encontrado.');
         }
         return product;
+    }
+    async listOwnProducts(userId, query) {
+        const profile = await this.ensureSellerProfile(userId);
+        const page = Math.max(1, query.page ?? 1);
+        const pageSize = Math.min(80, Math.max(1, query.pageSize ?? 24));
+        const where = {
+            sellerProfileId: profile.id,
+        };
+        const [items, total] = await this.prisma.$transaction([
+            this.prisma.product.findMany({
+                where,
+                include: {
+                    photos: { orderBy: { sortOrder: 'asc' } },
+                    sellerProfile: {
+                        select: {
+                            id: true,
+                            businessName: true,
+                            logoUrl: true,
+                            businessType: true,
+                            whatsapp: true,
+                            country: true,
+                            city: true,
+                        },
+                    },
+                },
+                orderBy: { createdAt: 'desc' },
+                skip: (page - 1) * pageSize,
+                take: pageSize,
+            }),
+            this.prisma.product.count({ where }),
+        ]);
+        return {
+            items,
+            pagination: {
+                page,
+                pageSize,
+                total,
+                totalPages: Math.ceil(total / pageSize),
+            },
+        };
     }
     async createProduct(userId, dto) {
         const profile = await this.ensureSellerProfile(userId);

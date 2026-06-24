@@ -18,6 +18,176 @@ let AdminService = class AdminService {
     constructor(prisma) {
         this.prisma = prisma;
     }
+    async getUsers() {
+        const users = await this.prisma.user.findMany({
+            select: {
+                id: true,
+                name: true,
+                email: true,
+                phone: true,
+                role: true,
+                avatarUrl: true,
+                emailVerifiedAt: true,
+                createdAt: true,
+                sellerProfile: {
+                    select: {
+                        id: true,
+                        businessName: true,
+                        status: true,
+                        isPublic: true,
+                    },
+                },
+            },
+            orderBy: { createdAt: 'desc' },
+            take: 500,
+        });
+        return users.map((user) => ({
+            ...user,
+            emailVerified: Boolean(user.emailVerifiedAt),
+        }));
+    }
+    async deleteUser(id, currentAdminId) {
+        if (id === currentAdminId) {
+            throw new common_1.BadRequestException('No puedes eliminar tu propia cuenta activa.');
+        }
+        const user = await this.prisma.user.findUnique({
+            where: { id },
+            select: {
+                id: true,
+                name: true,
+                email: true,
+                role: true,
+                sellerProfile: {
+                    select: {
+                        id: true,
+                        businessName: true,
+                    },
+                },
+            },
+        });
+        if (!user) {
+            throw new common_1.NotFoundException('Usuario no encontrado.');
+        }
+        if (user.role === client_1.Role.ADMIN) {
+            const adminCount = await this.prisma.user.count({
+                where: { role: client_1.Role.ADMIN },
+            });
+            if (adminCount <= 1) {
+                throw new common_1.BadRequestException('No puedes eliminar el ultimo administrador del sistema.');
+            }
+        }
+        await this.prisma.user.delete({
+            where: { id },
+        });
+        return {
+            id: user.id,
+            name: user.name,
+            email: user.email,
+            role: user.role,
+            businessName: user.sellerProfile?.businessName ?? null,
+            deleted: true,
+        };
+    }
+    async getBusinesses() {
+        const businesses = await this.prisma.sellerProfile.findMany({
+            include: {
+                user: {
+                    select: {
+                        id: true,
+                        name: true,
+                        email: true,
+                        phone: true,
+                        emailVerifiedAt: true,
+                    },
+                },
+                mainLocation: true,
+                verificationSubmissions: {
+                    orderBy: { submittedAt: 'desc' },
+                    take: 1,
+                },
+                _count: {
+                    select: {
+                        products: true,
+                        deliveryPoints: true,
+                        verificationSubmissions: true,
+                    },
+                },
+            },
+            orderBy: { createdAt: 'desc' },
+            take: 500,
+        });
+        return businesses.map((business) => {
+            const latestVerification = business.verificationSubmissions[0] ?? null;
+            return {
+                id: business.id,
+                businessName: business.businessName,
+                ownerName: business.ownerName,
+                businessType: business.businessType,
+                country: business.country,
+                department: business.department,
+                city: business.city,
+                whatsapp: business.whatsapp,
+                hasPhysicalStore: business.hasPhysicalStore,
+                hasShipping: business.hasShipping,
+                status: business.status,
+                isPublic: business.isPublic,
+                createdAt: business.createdAt,
+                user: {
+                    ...business.user,
+                    emailVerified: Boolean(business.user.emailVerifiedAt),
+                },
+                mainLocation: business.mainLocation,
+                counts: {
+                    products: business._count.products,
+                    deliveryPoints: business._count.deliveryPoints,
+                    verificationSubmissions: business._count.verificationSubmissions,
+                },
+                verification: latestVerification
+                    ? {
+                        id: latestVerification.id,
+                        status: latestVerification.status,
+                        videoUrl: latestVerification.videoUrl,
+                        submittedAt: latestVerification.submittedAt,
+                        reviewedAt: latestVerification.reviewedAt,
+                    }
+                    : null,
+            };
+        });
+    }
+    async deleteBusiness(id) {
+        const business = await this.prisma.sellerProfile.findUnique({
+            where: { id },
+            select: {
+                id: true,
+                businessName: true,
+                userId: true,
+                user: {
+                    select: {
+                        role: true,
+                    },
+                },
+            },
+        });
+        if (!business) {
+            throw new common_1.NotFoundException('Comercio no encontrado.');
+        }
+        return this.prisma.$transaction(async (transaction) => {
+            await transaction.sellerProfile.delete({
+                where: { id },
+            });
+            if (business.user.role === client_1.Role.SELLER) {
+                await transaction.user.update({
+                    where: { id: business.userId },
+                    data: { role: client_1.Role.USER },
+                });
+            }
+            return {
+                id: business.id,
+                businessName: business.businessName,
+                deleted: true,
+            };
+        });
+    }
     getPendingVerifications() {
         return this.prisma.verificationSubmission.findMany({
             where: { status: client_1.VerificationStatus.PENDING },

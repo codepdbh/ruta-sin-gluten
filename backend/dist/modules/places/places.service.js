@@ -20,8 +20,9 @@ let PlacesService = class PlacesService {
     }
     async getPlacesInBounds(query) {
         const sellers = await this.fetchVisibleSellers(query);
+        const ratingStats = await this.getRatingStats(sellers.map((seller) => seller.id));
         return sellers
-            .map((seller) => this.mapSellerSummary(seller))
+            .map((seller) => this.mapSellerSummary(seller, ratingStats.get(seller.id)))
             .filter((seller) => {
             if (seller.location?.lat == null || seller.location?.lng == null) {
                 return false;
@@ -34,10 +35,11 @@ let PlacesService = class PlacesService {
     }
     async getPlacesNearby(query) {
         const sellers = await this.fetchVisibleSellers(query);
+        const ratingStats = await this.getRatingStats(sellers.map((seller) => seller.id));
         const radius = query.radius ?? 2000;
         return sellers
             .map((seller) => {
-            const summary = this.mapSellerSummary(seller);
+            const summary = this.mapSellerSummary(seller, ratingStats.get(seller.id));
             if (summary.location?.lat == null || summary.location?.lng == null) {
                 return null;
             }
@@ -90,19 +92,73 @@ let PlacesService = class PlacesService {
         if (!seller) {
             throw new common_1.NotFoundException('Comercio no encontrado.');
         }
+        const ratingStats = await this.getRatingStats([seller.id]);
         return {
-            ...this.mapSellerSummary(seller),
+            ...this.mapSellerSummary(seller, ratingStats.get(seller.id)),
             owner: seller.user,
             products: seller.products,
             deliveryPoints: seller.deliveryPoints,
             shippingAreas: seller.shippingAreas,
         };
     }
+    async getMyPlaceRating(id, userId) {
+        await this.ensureVisibleSeller(id);
+        const rating = await this.prisma.placeRating.findUnique({
+            where: {
+                sellerProfileId_userId: {
+                    sellerProfileId: id,
+                    userId,
+                },
+            },
+            select: {
+                score: true,
+                comment: true,
+                updatedAt: true,
+            },
+        });
+        return { rating };
+    }
+    async ratePlace(id, userId, dto) {
+        const seller = await this.ensureVisibleSeller(id);
+        if (seller.userId === userId) {
+            throw new common_1.BadRequestException('No puedes puntuar tu propio comercio.');
+        }
+        const rating = await this.prisma.placeRating.upsert({
+            where: {
+                sellerProfileId_userId: {
+                    sellerProfileId: id,
+                    userId,
+                },
+            },
+            update: {
+                score: dto.score,
+                comment: dto.comment || null,
+            },
+            create: {
+                sellerProfileId: id,
+                userId,
+                score: dto.score,
+                comment: dto.comment || null,
+            },
+            select: {
+                score: true,
+                comment: true,
+                updatedAt: true,
+            },
+        });
+        const ratingStats = await this.getRatingStats([id]);
+        return {
+            rating,
+            ...(ratingStats.get(id) ?? { ratingAverage: dto.score, ratingCount: 1 }),
+        };
+    }
     fetchVisibleSellers(filters) {
         const where = {
             status: client_1.SellerProfileStatus.APPROVED,
             isPublic: true,
-            ...(filters.businessType ? { businessType: filters.businessType } : {}),
+            ...(filters.businessType
+                ? { businessType: filters.businessType }
+                : {}),
             ...(filters.modality
                 ? {
                     foodSafetyInfo: {
@@ -134,20 +190,28 @@ let PlacesService = class PlacesService {
                     take: 3,
                 },
                 shippingAreas: true,
+                user: {
+                    select: {
+                        id: true,
+                        name: true,
+                    },
+                },
             },
             orderBy: { createdAt: 'desc' },
             take: 200,
         });
     }
-    mapSellerSummary(seller) {
+    mapSellerSummary(seller, ratingStats) {
         const point = this.pickPrimaryPoint(seller);
         const latestVerification = seller.verificationSubmissions[0];
         return {
             id: seller.id,
             businessName: seller.businessName,
             ownerName: seller.ownerName,
+            logoUrl: seller.logoUrl,
             businessType: seller.businessType,
             description: seller.description,
+            country: seller.country,
             department: seller.department,
             city: seller.city,
             whatsapp: seller.whatsapp,
@@ -158,13 +222,56 @@ let PlacesService = class PlacesService {
             modality: seller.foodSafetyInfo?.modality ?? null,
             crossContaminationRisk: seller.foodSafetyInfo?.crossContaminationRisk ?? null,
             verificationStatus: latestVerification?.status ?? 'APPROVED',
+            ratingAverage: ratingStats?.ratingAverage ?? 0,
+            ratingCount: ratingStats?.ratingCount ?? 0,
             location: point,
             productsPreview: seller.products,
             shippingAreasCount: seller.shippingAreas.length,
         };
     }
+    async ensureVisibleSeller(id) {
+        const seller = await this.prisma.sellerProfile.findFirst({
+            where: {
+                id,
+                status: client_1.SellerProfileStatus.APPROVED,
+                isPublic: true,
+            },
+            select: {
+                id: true,
+                userId: true,
+            },
+        });
+        if (!seller) {
+            throw new common_1.NotFoundException('Comercio no encontrado.');
+        }
+        return seller;
+    }
+    async getRatingStats(sellerProfileIds) {
+        const stats = new Map();
+        const uniqueIds = Array.from(new Set(sellerProfileIds));
+        if (!uniqueIds.length) {
+            return stats;
+        }
+        const grouped = await this.prisma.placeRating.groupBy({
+            by: ['sellerProfileId'],
+            where: {
+                sellerProfileId: { in: uniqueIds },
+            },
+            _avg: { score: true },
+            _count: { score: true },
+        });
+        grouped.forEach((item) => {
+            const average = item._avg.score ?? 0;
+            stats.set(item.sellerProfileId, {
+                ratingAverage: Math.round(average * 10) / 10,
+                ratingCount: item._count.score,
+            });
+        });
+        return stats;
+    }
     pickPrimaryPoint(seller) {
-        if (seller.mainLocation?.lat !== null && seller.mainLocation?.lat !== undefined) {
+        if (seller.mainLocation?.lat !== null &&
+            seller.mainLocation?.lat !== undefined) {
             return {
                 kind: 'MAIN',
                 lat: seller.mainLocation.lat,
@@ -173,7 +280,10 @@ let PlacesService = class PlacesService {
                 reference: seller.mainLocation.reference,
             };
         }
-        const deliveryPoint = seller.deliveryPoints.find((point) => point.lat !== null && point.lat !== undefined && point.lng !== null && point.lng !== undefined);
+        const deliveryPoint = seller.deliveryPoints.find((point) => point.lat !== null &&
+            point.lat !== undefined &&
+            point.lng !== null &&
+            point.lng !== undefined);
         if (!deliveryPoint) {
             return null;
         }

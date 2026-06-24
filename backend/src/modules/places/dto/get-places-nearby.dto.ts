@@ -1,15 +1,18 @@
 import { Type } from 'class-transformer';
-import { IsOptional, IsString } from 'class-validator';
+import { IsNumber, IsOptional, IsString } from 'class-validator';
 import { BusinessType, FoodSafetyModality } from '@prisma/client';
 
 export class GetPlacesNearbyDto {
   @Type(() => Number)
+  @IsNumber()
   lat: number;
 
   @Type(() => Number)
+  @IsNumber()
   lng: number;
 
   @Type(() => Number)
+  @IsNumber()
   @IsOptional()
   radius?: number;
 

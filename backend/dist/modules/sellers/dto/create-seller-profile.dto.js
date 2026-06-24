@@ -13,12 +13,13 @@ exports.CreateSellerProfileDto = void 0;
 const class_transformer_1 = require("class-transformer");
 const class_validator_1 = require("class-validator");
 const client_1 = require("@prisma/client");
-const trimString = ({ value }) => (typeof value === 'string' ? value.trim() : value);
+const trimString = ({ value }) => typeof value === 'string' ? value.trim() : value;
 class CreateSellerProfileDto {
     businessName;
     ownerName;
     businessType;
     description;
+    country;
     department;
     city;
     whatsapp;
@@ -55,6 +56,12 @@ __decorate([
     (0, class_validator_1.MaxLength)(600),
     __metadata("design:type", String)
 ], CreateSellerProfileDto.prototype, "description", void 0);
+__decorate([
+    (0, class_transformer_1.Transform)(trimString),
+    (0, class_validator_1.IsOptional)(),
+    (0, class_validator_1.IsString)(),
+    __metadata("design:type", String)
+], CreateSellerProfileDto.prototype, "country", void 0);
 __decorate([
     (0, class_transformer_1.Transform)(trimString),
     (0, class_validator_1.IsString)(),
